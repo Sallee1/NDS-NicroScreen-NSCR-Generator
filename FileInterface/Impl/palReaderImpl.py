@@ -1,20 +1,24 @@
 import numpy as np
-import Utils.regex as regex
-import Utils.colorDepthConverter as colorDepthConv
-import Exception.Exceptions as ex
 
-from FileType.DsPal import DsPal,PalFormat
+import Exception.Exceptions as ex
+import Utils.colorDepthConverter as colorDepthConv
+from DsType.DsPal import DsPal, PalFormat
 from FileInterface.palReader import InterfacePalReader
 from Utils.Decorator.checkType import checkFileType
+from Utils.struct import *
+
 
 class ExtPalReader(InterfacePalReader):
   """读取.pal格式的调色板"""
   @checkFileType(".pal")
   def readFromFile(self,filePath: str) -> DsPal:
     with open(filePath,mode="rb") as palFile:
-      #读取调色板的颜色个数
-      palFile.seek(0x16)
-      length = int.from_bytes(palFile.read(2),"little")           
+      #解包
+      palStruct = PalStruct()
+      palStruct.unpack_from(palFile,0)
+      palStructDic = palStruct.getStructDic()
+      #读取文件头
+      length = palStructDic[PalStruct.Keys.colorCount]     
       #读取调色板数据
       palData = np.frombuffer(palFile.read(length*4),dtype=np.uint8) 
       palData = np.reshape(palData,(length,4))
@@ -44,13 +48,15 @@ class ExtBmpReader(InterfacePalReader):
   @checkFileType(".bmp")
   def readFromFile(self, filePath: str) -> DsPal:
     with open(filePath,mode="rb") as bmpFile:
-      #读取bmp的颜色格式
-      bmpFile.seek(0x1c)
-      biBitCount = int.from_bytes(bmpFile.read(2), 'little')  
+      # 解包
+      bmpStruct = BmpStruct()
+      bmpStruct.unpack_from(bmpFile,0)
+      bmpStructDic = bmpStruct.getStructDic()
+      # 读取文件头
+      biBitCount = bmpStructDic[BmpStruct.Keys.biBitCount]
       if(biBitCount > 8): 
         raise ex.FileTypeError("BMP索引颜色图像","BMP全彩图像") 
-      #使用了多少种颜色
-      biClrUsed = int.from_bytes(bmpFile.read(4), 'little')  
+      biClrUsed = bmpStructDic[BmpStruct.Keys.biClrUsed]
       if(biClrUsed <= 0 or biClrUsed > 256):
         biClrUsed = 256
       #读取调色板数据
@@ -67,20 +73,22 @@ class ExtNclrReader(InterfacePalReader):
   @checkFileType(".nclr")
   def readFromFile(self, filePath: str) -> DsPal:
     with open(filePath,mode="rb") as nclrFile:
+      #解包
+      nclrStruct = NclrStruct()
+      nclrStruct.unpack_from(nclrFile,0)
+      nclrStructDic = nclrStruct.getStructDic()
+
       #读取颜色格式
-      nclrFile.seek(0x18)
-      palFormatFlag = int.from_bytes(nclrFile.read(2),'little')
+      palFormatFlag = nclrStructDic[NclrStruct.Keys.bitDepth]
       palFormat = PalFormat.bpp4 if(palFormatFlag == 3) else PalFormat.bpp8
+      #计算调色板大小
+      nclrFile.seek(0x14)
+      sectionSize = nclrStructDic[NclrStruct.Keys.sectionSize]
+      length = (sectionSize - 24) // 2
       #读取调色版数据
       nclrFile.seek(0x28)
-      dsPalBuffer = nclrFile.read()
-      #去除PMCP数据
-      findPmcpRes = dsPalBuffer.find(b"PMCP")
-      if(findPmcpRes != -1):
-        dsPalBuffer = dsPalBuffer[:findPmcpRes]
-      #计算调色板颜色个数
-      length = (len(dsPalBuffer)) // 2
-      #如果是4bpp，读取颜色计数
+      dsPalBuffer = nclrFile.read(length*2)
+      #如果是4bpp，计算颜色计数
       bpp4Count = 16
       if(palFormat == PalFormat.bpp4):
         bpp4Count = length // 16

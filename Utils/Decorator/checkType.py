@@ -1,5 +1,6 @@
-import Utils.regex as regex
 import Exception.Exceptions as ex
+import Utils.regex as regex
+
 
 def checkFileType(type:str):
   """

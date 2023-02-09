@@ -1,5 +1,6 @@
 from copy import deepcopy
 
+
 def returnCopy(fun):
   """
   @returnCopy

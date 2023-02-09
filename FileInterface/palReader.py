@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
-from FileType.DsPal import DsPal
+
+from DsType.DsPal import DsPal
+
 
 class InterfacePalReader(ABC):
   @abstractmethod

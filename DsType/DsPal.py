@@ -4,6 +4,7 @@ import numpy as np
 
 from Utils.Decorator.returnCopy import returnCopy
 
+
 class PalFormat(Enum):
   bpp4 = 16
   bpp8 = 256

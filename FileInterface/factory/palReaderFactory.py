@@ -1,6 +1,7 @@
-from FileInterface.palReader import InterfacePalReader
-from FileInterface.Impl.palReaderImpl import *
 import Exception.Exceptions as ex
+from FileInterface.Impl.palReaderImpl import *
+from FileInterface.palReader import InterfacePalReader
+
 
 class PalReaderFactory():
   """PalReader的工厂类"""

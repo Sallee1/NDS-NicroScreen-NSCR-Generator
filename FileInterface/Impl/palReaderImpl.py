@@ -1,7 +1,7 @@
 import numpy as np
 
-import Exception.Exceptions as ex
-import Utils.colorDepthConverter as colorDepthConv
+import customException.ex as ex
+import Utils.imgTool as colorDepthConv
 from DsType.DsPal import DsPal, PalFormat
 from FileInterface.palReader import InterfacePalReader
 from Utils.Decorator.checkType import checkFileType
@@ -88,16 +88,12 @@ class ExtNclrReader(InterfacePalReader):
       #读取调色版数据
       nclrFile.seek(0x28)
       dsPalBuffer = nclrFile.read(length*2)
-      #如果是4bpp，计算颜色计数
-      bpp4Count = 16
-      if(palFormat == PalFormat.bpp4):
-        bpp4Count = length // 16
       #读取颜色数据，并转换为真彩色
       dsPalData = np.frombuffer(dsPalBuffer,dtype=np.uint16)
       palData = colorDepthConv.v_dsColor2TrueColor(dsPalData)
       #处理数据
       data = handlePal(palData)
-      return DsPal(data=data,palFormat=palFormat,length=length,bpp4Count=bpp4Count)
+      return DsPal(data=data,palFormat=palFormat,length=length)
 
 def handlePal(palData:np.ndarray):
   # 不足256填充0数据

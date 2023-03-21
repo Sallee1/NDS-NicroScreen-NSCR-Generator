@@ -1,5 +1,6 @@
-import Exception.Exceptions as ex
+
 import Utils.regex as regex
+from customException.ex import FileTypeError
 
 
 def checkFileType(type:str):
@@ -13,7 +14,7 @@ def checkFileType(type:str):
     def wrapper(self,fileName,*args,**kwargs):
       extType = regex.getExtName(fileName).lower()
       if(extType != type):
-        raise ex.FileTypeError(type,extType)
+        raise FileTypeError(f"所需要的格式为{type},但实际打开的是{extType}")
       return fun(self,fileName,*args,**kwargs)
     return wrapper
   return decorator

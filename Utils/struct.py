@@ -34,11 +34,11 @@ class AbstractStruct(ABC):
     vList = [(list(self.structDic.keys())[i],v[i]) for i in range(len(v))]
     self.structDic = dict(vList)
   
-  def pack_into(self,file:IO,offset:int):
+  def pack_into(self,file:IO,offset = 0):
     file.seek(offset,0)
     file.write(self.pack())
   
-  def unpack_from(self,file:IO,offset:int):
+  def unpack_from(self,file:IO,offset = 0):
     file.seek(offset,0)
     self.unpack(file.read(self.structSize))
 
@@ -139,3 +139,78 @@ class BmpStruct(AbstractStruct):
 
     self.structFormat = "<2sIHHIIiiHHIIIIII"
     self.structSize = 54
+
+class NcgrStruct(AbstractStruct):
+  class Keys(Enum):
+    ncgrHeader      = 0
+    fileSize        = 1
+    headerSize      = 2
+    sectionVersion  = 3
+    sectionHeader   = 4
+    sectionSize     = 5
+    height          = 6
+    width           = 7
+    BitDepth        = 8
+    height2         = 9
+    width2          = 10
+    tileFlag        = 11
+    partitionedFlag = 12
+    dataSize        = 13
+    dataOffset      = 14
+  
+  def __init__(self) -> None:
+    self.structDic = {
+      self.Keys.ncgrHeader      : b"RGCN",
+      "unknown0"                : b"\x00\x01\xfe\xff",
+      self.Keys.fileSize        : 0,
+      self.Keys.headerSize      : 16,
+      self.Keys.sectionVersion  : 1,
+      self.Keys.sectionHeader   : b"RAHC",
+      self.Keys.sectionSize     : 0,
+      self.Keys.height          : 32,
+      self.Keys.width           : 32,
+      self.Keys.BitDepth        : 3,
+      self.Keys.height2         : 0,
+      self.Keys.width2          : 0,
+      self.Keys.tileFlag        : 0,
+      self.Keys.partitionedFlag : 0,
+      "unkonwn1"                : 0,
+      self.Keys.dataSize        : 0,
+      self.Keys.dataOffset      : 24,
+    }
+
+    self.structFormat = "<4s4sIHH4sIHHIHHccHII"
+    self.structSize = 48
+
+class NscrStruct(AbstractStruct):
+  class Keys(Enum):
+    nscrHeader         = 0
+    fileSize           = 1
+    headerSize         = 2
+    sectionVersion     = 3
+    sectionHeader      = 4
+    sectionSize        = 5
+    width              = 6
+    height             = 7
+    internalScreenSize = 8
+    bgType             = 9
+    DataSize           = 10
+  
+  def __init__(self) -> None:
+    self.structDic = {
+      self.Keys.nscrHeader        :b"RCSN",
+      "unknown0"                  :b"\x00\x01\xfe\xff",
+      self.Keys.fileSize          :0,
+      self.Keys.headerSize        :16,
+      self.Keys.sectionVersion    :1,
+      self.Keys.sectionHeader     :b"NRCS",
+      self.Keys.sectionSize       :0,
+      self.Keys.width             :256,
+      self.Keys.height            :256,
+      self.Keys.internalScreenSize:0,
+      self.Keys.bgType            :0,
+      self.Keys.DataSize          :2048,
+    }
+
+    self.structFormat = "<4s4sIHH4sIHHHHI"
+    self.structSize = 36

@@ -1,7 +1,6 @@
-import numpy as np
+from __imports__ import *
 
-import Exception.Exceptions as ex
-import Utils.colorDepthConverter as colorDepthConv
+import Utils.imgTool as colorDepthConv
 from DsType.DsPal import DsPal, PalFormat
 from FileInterface.palSaver import InterfacePalSaver
 from Utils.Decorator.checkType import checkFileType
@@ -37,7 +36,7 @@ class ExtActSaver(InterfacePalSaver):
       palLength = dsPal.getLength()
       data = dsPal.getData()[:palLength]
       # 写入数据
-      actFile.write(data)
+      actFile.write(data.tobytes())
 
 class ExtNclrSaver(InterfacePalSaver):
   """保存Nitro调色板"""

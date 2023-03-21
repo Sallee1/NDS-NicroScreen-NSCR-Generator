@@ -13,5 +13,5 @@ class InterfacePalReader(ABC):
     * fileName:需要读取的文件路径
     
     return:
-    PalFile对象
+    DsPal对象
     """
